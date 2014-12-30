@@ -13,7 +13,7 @@ function create(chain) {
 		".DS_Store",
 		"Thumbs.db"
 	];
-	badfiles = _.map(badfile, function(f) { return f.toLowerCase(); });
+	badfiles = _.map(badfiles, function(f) { return f.toLowerCase(); });
 	return {
 		opendir: function(dir) {
 			return chain.opendir(dir);

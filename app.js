@@ -31,4 +31,4 @@ leveldb_store.create("db").then(function(store) {
 	}).then(function() {
 		console.log("DONE");
 	}).done();
-});
+}).done();
