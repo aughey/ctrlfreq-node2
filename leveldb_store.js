@@ -1,4 +1,4 @@
-var levelup = require('levelup');
+var levelup = require('level');
 var hash = require('./hash');
 
 var Q = require('q');

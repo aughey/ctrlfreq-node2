@@ -4,7 +4,10 @@ var Q = require('q');
 
 var cachecount = 0;
 
-function init(cachefile, chain) {
+function create(chain, cachefile) {
+	if(!cachefile) {
+		cachefile = "cache.json";
+	}
 	var filecache = {};
 	try {
 		filecache = JSON.parse(fs.readFileSync(cachefile));
@@ -55,5 +58,5 @@ function init(cachefile, chain) {
 }
 
 module.exports = {
-	init: init
+	create: create
 }

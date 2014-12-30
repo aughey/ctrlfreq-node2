@@ -13,14 +13,26 @@ args.shift();
 args.shift();
 
 leveldb_store.create("db").then(function(store) {
+
+	var chain = [
+		file_excludes,parallel_limiter,processfile_cache,logger,filechunker
+	];
+	chain.reverse();
+	var handler = store;
+	_.each(chain, function(c) {
+		handler = c.create(handler);
+	})
+
+/*
 	var handler = file_excludes.create(
 		parallel_limiter.create(
-			processfile_cache.init('cache.json',
+			processfile_cache.init(
 				logger.create(
 					filechunker.create(store))
 			)
 		)
 	);
+*/
 
 	var pending = _.map(args, function(dir) {
 		return filetraverse.traverse(dir, handler);
