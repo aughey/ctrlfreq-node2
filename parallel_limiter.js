@@ -5,30 +5,38 @@ function create(chain) {
 	var dirlimit = limit(3, "dirlimit");
 	var filelimit = limit(10,"filelimit");
 
-	function subcreate(whendone,dir) {
+	function subcreate(dir) {
 		return {
 			opendir: function(dirname) {
 				return dirlimit(dirname).then(function(thisdone) {
-					return chain.opendir(dirname).then(function() {
-						return subcreate(thisdone,dirname);
+					var myhandle = {
+						whendone: thisdone
+					};
+					return chain.opendir(dirname).then(function(hishandle) {
+						myhandle.hishandle = hishandle;
+						return myhandle;
 					});
 				});
 			},
-			dirdone: function() {
-				if(whendone) {
-					whendone();
-				}
+			dirdone: function(handle) {
+				handle.whendone();
+				if(handle.hishandle) {
+					chain.dirdone(handle.hishandle);
+				}		
 			},
-			storefile: function(f) {
+			storefile: function(f,handle) {
 				return filelimit(f.fullpath).then(function(thisdone) {
-					return chain.storefile(f).then(function(res) {
+					return chain.storefile(f,handle.hishandle).then(function(res) {
 						thisdone();
 						return res;
 					});
 				});
 			},
-			close: function() {
-				return chain.close();
+			close: function(handle) {
+				return chain.close(handle);
+			},
+			destroy: function() {
+				return chain.destroy();
 			}
 		}
 	}

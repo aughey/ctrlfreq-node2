@@ -3,13 +3,10 @@ var Q = require('q');
 function create(chain) {
 	return {
 		opendir: function(dir) {
-			return chain.opendir(dir).then(function(sub) {
-				//	console.log("Opened dir " + dir);
-				return create(sub);
-			});
+			return chain.opendir(dir);
 		},
-		storefile: function(info) {
-			return chain.storefile(info).then(function(res) {
+		storefile: function(info,handle) {
+			return chain.storefile(info,handle).then(function(res) {
 				console.log("Stored file: " + info.fullpath);
 				return res;
 			});
@@ -17,8 +14,11 @@ function create(chain) {
 		dirdone: function() {
 			return chain.dirdone();
 		},
-		close: function() {
-			return chain.close();
+		close: function(handle) {
+			return chain.close(handle);
+		},
+		destroy: function() {
+			return chain.destroy();
 		}
 	}
 }

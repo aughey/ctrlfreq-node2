@@ -17,7 +17,7 @@ function init() {
 	var dirlimit = limit(10, "dirlimit");
 
 	function processdir(dirname, handler) {
-		return handler.opendir(dirname).then(function(dirhandler) {
+		return handler.opendir(dirname).then(function(handle) {
 			return Q.nfcall(fs.readdir, dirname).then(function(dirfiles) {
 				var pendingstats = dirfiles.length;
 				var stats = _.map(dirfiles, function(file) {
@@ -25,8 +25,8 @@ function init() {
 
 					function handleStat(stat) {
 						pendingstats--;
-						if(pendingstats == 0 && dirhandler.dirdone) {
-							dirhandler.dirdone();
+						if(pendingstats == 0 && handler.dirdone) {
+							handler.dirdone(handle);
 						}
 						var storestat = _.pick(stat, 'mode', 'uid', 'gid', 'size', 'mtime');
 						storestat.mtime = storestat.mtime.toISOString();
@@ -36,9 +36,9 @@ function init() {
 							stat: storestat
 						};
 						if (stat.isFile()) {
-							return dirhandler.storefile(info);
+							return handler.storefile(info,handle);
 						} else if (stat.isDirectory()) {
-							return processdir(fullpath,dirhandler);
+							return processdir(fullpath,handler);
 						} else {
 							console.log("Unknown file: " + fullpath);
 						}
@@ -48,7 +48,7 @@ function init() {
 				});
 
 				return Q.all(stats).then(function() {
-					return dirhandler.close();
+					return handler.close(handle);
 				});
 			});
 		});

@@ -8,9 +8,9 @@ function create(store) {
 
 	var me = {
 		opendir: function() {
-			return Q(me);
+			return Q();
 		},
-		storefile: function(info) {
+		storefile: function(info,handle) {
 			// We're returning our own deferred here to own our own promise chain.
 			var deferred = Q.defer();
 
@@ -73,6 +73,9 @@ function create(store) {
 		},
 		close: function() {
 
+		},
+		destroy: function() {
+			return store.destroy();
 		}
 	};
 	return me;
