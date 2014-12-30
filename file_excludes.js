@@ -10,15 +10,18 @@ function create(chain) {
 	});
 
 	var badfiles = [
-		".DS_Store"
+		".DS_Store",
+		"Thumbs.db"
 	];
+	badfiles = _.map(badfile, function(f) { return f.toLowerCase(); });
 	return {
 		opendir: function(dir) {
 			return chain.opendir(dir);
 		},
 		storefile: function(info, handle) {
-			var ext = path.extname(info.fullpath);
-			if (_.contains(extensions, ext) || _.contains(badfiles, info.file)) {
+			var file = info.file.toLowerCase();
+			var ext = path.extname(file);
+			if (_.contains(extensions, ext) || _.contains(badfiles, file)) {
 				return Q();
 			} else {
 				return chain.storefile(info, handle);
