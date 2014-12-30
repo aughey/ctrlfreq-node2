@@ -34,7 +34,9 @@ function init(cachefile, chain) {
 				}
 			}
 			return chain.storefile(info, handle).then(function(res) {
-				writecache(info);
+				if(res) {
+					writecache(info);
+				}
 				return res;
 			});
 		},

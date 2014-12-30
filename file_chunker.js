@@ -29,7 +29,9 @@ function create(store) {
 
 			fs.open(info.fullpath, 'r', function(err, fd) {
 				if (err) {
+					console.log("Error: Couldn't read " + info.fullpath);
 					deferred.resolve(null);
+					return;
 				}
 
 				function readnext() {

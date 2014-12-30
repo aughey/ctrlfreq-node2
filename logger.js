@@ -7,7 +7,9 @@ function create(chain) {
 		},
 		storefile: function(info,handle) {
 			return chain.storefile(info,handle).then(function(res) {
-				console.log("Stored file: " + info.fullpath);
+				if(res) {
+					console.log("Stored file: " + info.fullpath);
+				}
 				return res;
 			});
 		},

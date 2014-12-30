@@ -28,6 +28,9 @@ function init() {
 						if(pendingstats == 0 && handler.dirdone) {
 							handler.dirdone(handle);
 						}
+						if(!stat) {
+							return;
+						}
 						var storestat = _.pick(stat, 'mode', 'uid', 'gid', 'size', 'mtime');
 						storestat.mtime = storestat.mtime.toISOString();
 						var info = {
@@ -44,7 +47,10 @@ function init() {
 						}
 					}
 
-					return Q.nfcall(fs.stat, fullpath).then(handleStat);
+					return Q.nfcall(fs.stat, fullpath).then(handleStat).catch(function(error) {
+						console.log("Stat error: " + error);
+						handleStat(null);
+					});
 				});
 
 				if(stats.length == 0) {
