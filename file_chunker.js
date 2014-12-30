@@ -4,7 +4,7 @@ var Q = require('q');
 var zlib = require('zlib');
 
 function create(store) {
-	var readlimit = limit(1, "readlimit");
+	var readlimit = limit(100, "readlimit");
 
 	var me = {
 		opendir: function() {

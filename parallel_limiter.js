@@ -2,8 +2,8 @@ var Q = require('q');
 var limit = require('./limit').limit;
 
 function create(chain) {
-	var dirlimit = limit(1, "dirlimit");
-	var filelimit = limit(1,"filelimit");
+	var dirlimit = limit(5, "dirlimit");
+	var filelimit = limit(10,"filelimit");
 
 	function subcreate(dir) {
 		return {
