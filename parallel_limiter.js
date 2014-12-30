@@ -2,8 +2,8 @@ var Q = require('q');
 var limit = require('./limit').limit;
 
 function create(chain) {
-	var dirlimit = limit(3, "dirlimit");
-	var filelimit = limit(10,"filelimit");
+	var dirlimit = limit(1, "dirlimit");
+	var filelimit = limit(1,"filelimit");
 
 	function subcreate(dir) {
 		return {
@@ -20,9 +20,8 @@ function create(chain) {
 			},
 			dirdone: function(handle) {
 				handle.whendone();
-				if(handle.hishandle) {
-					chain.dirdone(handle.hishandle);
-				}		
+				delete handle.whendone;
+				chain.dirdone(handle.hishandle);
 			},
 			storefile: function(f,handle) {
 				return filelimit(f.fullpath).then(function(thisdone) {

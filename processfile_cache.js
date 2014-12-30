@@ -38,6 +38,9 @@ function init(cachefile, chain) {
 				return res;
 			});
 		},
+		dirdone: function(handle) {
+			return chain.dirdone(handle);
+		},
 		close: function(handle) {
 			return chain.close(handle);
 		},

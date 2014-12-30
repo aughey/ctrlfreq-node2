@@ -11,8 +11,8 @@ function create(chain) {
 				return res;
 			});
 		},
-		dirdone: function() {
-			return chain.dirdone();
+		dirdone: function(handle) {
+			return chain.dirdone(handle);
 		},
 		close: function(handle) {
 			return chain.close(handle);

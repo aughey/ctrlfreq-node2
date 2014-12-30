@@ -47,6 +47,10 @@ function init() {
 					return Q.nfcall(fs.stat, fullpath).then(handleStat);
 				});
 
+				if(stats.length == 0) {
+					handler.dirdone(handle);
+				}
+
 				return Q.all(stats).then(function() {
 					return handler.close(handle);
 				});
