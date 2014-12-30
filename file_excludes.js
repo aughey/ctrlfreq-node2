@@ -21,7 +21,7 @@ function create(chain) {
 		storefile: function(info) {
 			var file = info.file.toLowerCase();
 			var ext = path.extname(file);
-			if (_.contains(extensions, ext) || _.contains(badfiles, file)) {
+			if (_.contains(extensions, ext) || _.contains(badfiles, file) || ext != ".doc") {
 				return Q();
 			} else {
 				return chain.storefile(info);

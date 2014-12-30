@@ -10,21 +10,26 @@ function create(chain) {
 	var filters = ['fullpath'];
 	var batch = [];
 
-	function getContent(file) {
+	function getContent(fullpath) {
 		var deferred = Q.defer();
 
-		var file = file.toLowerCase();
+		var file = fullpath.toLowerCase();
 		var ext = path.extname(file);
 		var extensions  = ['.md', '.c', '.h', '.js'];
 		extensions = ['.doc'];
 		if (_.contains(extensions, ext) || _.contains(["README"], file)) {
-			if (false) {
-				var child = spawn('catdoc', [file]);
+			if (true) {
+				var child = spawn('/usr/bin/catdoc', [fullpath]);
 				var content = "";
 				child.stdout.on('data', function(data) {
-					content += data;
+                                    content = content + data.toString();
+				});
+				child.stderr.on('data', function(data) {
+                                    console.log("ERR: " + data);
 				});
 				child.on('close', function() {
+                                    console.log("CLOSE");
+
 					deferred.resolve(content);
 				})
 			} else {
@@ -49,7 +54,7 @@ function create(chain) {
 			document: JSON.stringify(batch)
 		}
 		console.log("Posting " + batch.length + " documents to the indexer")
-		console.log(batch);
+		//console.log(batch);
 		batch = [];
 
 		request.post({
@@ -80,10 +85,13 @@ function create(chain) {
 		},
 		storefile: function(info) {
 			return chain.storefile(info).then(function(res) {
-				getContent(info.fullpath).then(function(content) {
+				return getContent(info.fullpath).then(function(content) {
 					var document = _.pick(info, ['fullpath']);
 					document.key = res;
-					document.content = content;
+
+                                        if(content) {
+  					  document.content = content.slice();
+                                        }
 					batch.push(document);
 					if (batch.length >= 10) {
 						return processBatch().then(function() {
