@@ -13,7 +13,7 @@ function create(store) {
 		dirdone: function() {
 
 		},
-		storefile: function(info,handle) {
+		storefile: function(info) {
 			// We're returning our own deferred here to own our own promise chain.
 			var deferred = Q.defer();
 

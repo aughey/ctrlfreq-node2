@@ -18,13 +18,13 @@ function create(chain) {
 		opendir: function(dir) {
 			return chain.opendir(dir);
 		},
-		storefile: function(info, handle) {
+		storefile: function(info) {
 			var file = info.file.toLowerCase();
 			var ext = path.extname(file);
 			if (_.contains(extensions, ext) || _.contains(badfiles, file)) {
 				return Q();
 			} else {
-				return chain.storefile(info, handle);
+				return chain.storefile(info);
 			}
 		},
 		dirdone: function(handle) {

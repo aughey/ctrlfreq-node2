@@ -25,7 +25,7 @@ function init() {
 
 					function handleStat(stat) {
 						pendingstats--;
-						if(pendingstats == 0 && handler.dirdone) {
+						if(pendingstats == 0) {
 							handler.dirdone(handle);
 						}
 						if(!stat) {
@@ -36,10 +36,11 @@ function init() {
 						var info = {
 							fullpath: fullpath,
 							file: file,
-							stat: storestat
+							stat: storestat,
+							handle: handle
 						};
 						if (stat.isFile()) {
-							return handler.storefile(info,handle);
+							return handler.storefile(info);
 						} else if (stat.isDirectory()) {
 							return processdir(fullpath,handler);
 						} else {

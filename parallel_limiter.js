@@ -23,9 +23,13 @@ function create(chain) {
 				delete handle.whendone;
 				chain.dirdone(handle.hishandle);
 			},
-			storefile: function(f,handle) {
+			storefile: function(f) {
 				return filelimit(f.fullpath).then(function(thisdone) {
-					return chain.storefile(f,handle.hishandle).then(function(res) {
+					var oldhandle = f.handle;
+					f.handle = oldhandle.hishandle;
+
+					return chain.storefile(f).then(function(res) {
+						f.handle = oldhandle;
 						thisdone();
 						return res;
 					});

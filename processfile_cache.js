@@ -27,7 +27,7 @@ function create(chain, cachefile) {
 		opendir: function(dir) {
 			return chain.opendir(dir);
 		},
-		storefile: function(info, handle) {
+		storefile: function(info) {
 			var cache = filecache[info.fullpath];
 			if (cache) {
 				if (_.isEqual(info.stat, cache.stat)) {
@@ -36,7 +36,7 @@ function create(chain, cachefile) {
 					return Q();
 				}
 			}
-			return chain.storefile(info, handle).then(function(res) {
+			return chain.storefile(info).then(function(res) {
 				if(res) {
 					writecache(info);
 				}

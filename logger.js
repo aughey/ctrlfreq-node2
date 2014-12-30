@@ -5,8 +5,8 @@ function create(chain) {
 		opendir: function(dir) {
 			return chain.opendir(dir);
 		},
-		storefile: function(info,handle) {
-			return chain.storefile(info,handle).then(function(res) {
+		storefile: function(info) {
+			return chain.storefile(info).then(function(res) {
 				if(res) {
 					console.log("Stored file: " + info.fullpath);
 				}

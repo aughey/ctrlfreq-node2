@@ -14,5 +14,8 @@
          "fs-ext": "> 0.0.1",
          "glob": "> 0.0.1",
          "underscore": ">= 0.1",
-          "level": ">= 0.9"      }
+          "level": ">= 0.9",
+          "search-index": ">= 0.4.9",
+          "request": ">= 0.0.1"
+                }
 }
