@@ -4,7 +4,7 @@ function create(chain) {
 	return {
 		opendir: function(dir) {
 			return chain.opendir(dir).then(function(sub) {
-				//				console.log("Opened dir " + dir);
+				//	console.log("Opened dir " + dir);
 				return create(sub);
 			});
 		},

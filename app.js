@@ -1,6 +1,7 @@
 var filetraverse = require('./filetraverse');
 var parallel_limiter = require('./parallel_limiter');
 var logger = require("./logger");
+var filechunker = require("./file_chunker");
 var _ = require('underscore');
 var Q = require('q');
 
@@ -10,14 +11,10 @@ args.shift();
 
 var dummyhandler = {
 	opendir: function(dirname) {
-		return Q.fcall(function() {
-			return dummyhandler;
-		});
+		return Q(dummyhandler);
 	},
 	close: function() {
-		return Q.fcall(function() {
-
-		});
+		return Q();
 	},
 	storefile: function(info) {
 		//console.log("asked to store file " + info.fullpath);
@@ -27,7 +24,13 @@ var dummyhandler = {
 	}
 };
 
-var handler = parallel_limiter.create(logger.create(dummyhandler));
+var dummystore = {
+	save: function(b) {
+		return Q();
+	}
+}
+
+var handler = parallel_limiter.create(logger.create(filechunker.create(dummystore)));
 
 var pending = _.map(args, function(dir) {
   return filetraverse.traverse(dir,handler);
