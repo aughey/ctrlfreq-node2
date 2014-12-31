@@ -1,1 +1,1 @@
-Second generation of ctrlfreq-node that uses a non-git storage
+Second generation of ctrlfreq-node that uses a non-git-like storage
