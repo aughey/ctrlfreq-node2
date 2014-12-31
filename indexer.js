@@ -15,20 +15,20 @@ function create(chain) {
 
 		var file = fullpath.toLowerCase();
 		var ext = path.extname(file);
-		var extensions  = ['.md', '.c', '.h', '.js'];
+		var extensions = ['.md', '.c', '.h', '.js'];
 		extensions = ['.doc'];
 		if (_.contains(extensions, ext) || _.contains(["README"], file)) {
 			if (true) {
 				var child = spawn('/usr/bin/catdoc', [fullpath]);
 				var content = "";
 				child.stdout.on('data', function(data) {
-                                    content = content + data.toString();
+					content = content + data.toString();
 				});
 				child.stderr.on('data', function(data) {
-                                    console.log("ERR: " + data);
+					console.log("ERR: " + data);
 				});
 				child.on('close', function() {
-                                    console.log("CLOSE");
+					console.log("CLOSE");
 
 					deferred.resolve(content);
 				})
@@ -54,7 +54,7 @@ function create(chain) {
 			document: JSON.stringify(batch)
 		}
 		console.log("Posting " + batch.length + " documents to the indexer")
-		//console.log(batch);
+			//console.log(batch);
 		batch = [];
 
 		request.post({
@@ -89,9 +89,9 @@ function create(chain) {
 					var document = _.pick(info, ['fullpath']);
 					document.key = res;
 
-                                        if(content) {
-  					  document.content = content.slice();
-                                        }
+					if (content) {
+						document.content = content.slice();
+					}
 					batch.push(document);
 					if (batch.length >= 10) {
 						return processBatch().then(function() {

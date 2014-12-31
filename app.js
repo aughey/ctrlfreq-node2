@@ -16,7 +16,9 @@ args.shift();
 leveldb_store.create("db").then(function(store) {
 
 	var chain = [
-		file_excludes,parallel_limiter,processfile_cache,logger,indexer,filechunker
+		file_excludes, parallel_limiter, processfile_cache, logger,
+		//indexer,
+		filechunker
 	];
 	chain.reverse();
 	var handler = store;

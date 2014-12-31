@@ -13,7 +13,9 @@ function create(chain) {
 		".DS_Store",
 		"Thumbs.db"
 	];
-	badfiles = _.map(badfiles, function(f) { return f.toLowerCase(); });
+	badfiles = _.map(badfiles, function(f) {
+		return f.toLowerCase();
+	});
 	return {
 		opendir: function(dir) {
 			return chain.opendir(dir);
@@ -21,7 +23,7 @@ function create(chain) {
 		storefile: function(info) {
 			var file = info.file.toLowerCase();
 			var ext = path.extname(file);
-			if (_.contains(extensions, ext) || _.contains(badfiles, file) || ext != ".doc") {
+			if (_.contains(extensions, ext) || _.contains(badfiles, file)) {
 				return Q();
 			} else {
 				return chain.storefile(info);
