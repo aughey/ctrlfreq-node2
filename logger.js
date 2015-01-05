@@ -1,10 +1,8 @@
 var Q = require('q');
+var c = require('./chain');
 
 function create(chain) {
-	return {
-		opendir: function(dir) {
-			return chain.opendir(dir);
-		},
+	return c.extend(chain,{
 		storefile: function(info) {
 			return chain.storefile(info).then(function(res) {
 				if(res) {
@@ -13,16 +11,14 @@ function create(chain) {
 				return res;
 			});
 		},
-		dirdone: function(handle) {
-			return chain.dirdone(handle);
-		},
-		close: function(handle) {
-			return chain.close(handle);
-		},
-		destroy: function() {
-			return chain.destroy();
+		storedirectory: function(info) {
+			return chain.storedirectory(info).then(function(res) {
+				console.log("Stored directory: " + info.path)
+				console.log(info);
+				return res;
+			})
 		}
-	}
+	});
 }
 
 module.exports = {

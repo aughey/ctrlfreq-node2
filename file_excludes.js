@@ -29,6 +29,9 @@ function create(chain) {
 				return chain.storefile(info);
 			}
 		},
+		storedirectory: function(info) {
+			return chain.storedirectory(info);
+		},
 		dirdone: function(handle) {
 			return chain.dirdone(handle);
 		},

@@ -16,6 +16,7 @@
          "underscore": ">= 0.1",
           "level": ">= 0.9",
           "search-index": ">= 0.4.9",
-          "request": ">= 0.0.1"
+          "request": ">= 0.0.1",
+          "mongodb": ">= 0.0.1"
                 }
 }

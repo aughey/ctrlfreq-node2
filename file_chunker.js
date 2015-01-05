@@ -13,6 +13,9 @@ function create(store) {
 		dirdone: function() {
 
 		},
+		storedirectory: function(info) {
+			return store.save_dir(info);
+		},
 		storefile: function(info) {
 			// We're returning our own deferred here to own our own promise chain.
 			var deferred = Q.defer();
@@ -23,7 +26,13 @@ function create(store) {
 			function checkdone(error) {
 				outstanding -= 1;
 				if (outstanding === 0) {
-					deferred.resolve(error ? null : chunks);
+					if(error) {
+						deferred.resolve(null);
+					} else {
+						deferred.resolve({
+							key: chunks.join(',')
+						})
+					}
 				}
 			}
 
@@ -60,7 +69,7 @@ function create(store) {
 							chunks.push(null);
 							outstanding++;
 							zlib.deflate(buffer, function(err, compressed_buffer) {
-								store.save(compressed_buffer).then(function(uuid) {
+								store.save_chunk(compressed_buffer).then(function(uuid) {
 									chunks[index] = uuid;
 									bufferdone();
 									checkdone();
@@ -77,7 +86,7 @@ function create(store) {
 			return deferred.promise;
 		},
 		close: function() {
-
+			return Q();
 		},
 		destroy: function() {
 			return store.destroy();

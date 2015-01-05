@@ -5,7 +5,7 @@ var Q = require('q');
 var cachecount = 0;
 
 function create(chain, cachefile) {
-	if(!cachefile) {
+	if (!cachefile) {
 		cachefile = "cache.json";
 	}
 	var filecache = {};
@@ -15,13 +15,7 @@ function create(chain, cachefile) {
 	} catch (e) {
 		filecache = {};
 	}
-	var newcache = filecache;
 
-	function writecache(info) {
-		newcache[info.fullpath] = {
-			stat: info.stat
-		};
-	}
 
 	var me = {
 		opendir: function(dir) {
@@ -30,18 +24,23 @@ function create(chain, cachefile) {
 		storefile: function(info) {
 			var cache = filecache[info.fullpath];
 			if (cache) {
-				if (_.isEqual(info.stat, cache.stat)) {
+				if (_.isEqual(info.stat, cache.info.stat)) {
 					//console.log("Not storing, cached: " + info.fullpath);
-					writecache(info);
-					return Q();
+					return Q(cache.r);
 				}
 			}
 			return chain.storefile(info).then(function(res) {
-				if(res) {
-					writecache(info);
+				if (res) {	
+					filecache[info.fullpath] = {
+						info: info,
+						r: res
+					}			
 				}
 				return res;
 			});
+		},
+		storedirectory: function(info) {
+			return chain.storedirectory(info);
 		},
 		dirdone: function(handle) {
 			return chain.dirdone(handle);
@@ -50,7 +49,7 @@ function create(chain, cachefile) {
 			return chain.close(handle);
 		},
 		destroy: function() {
-			fs.writeFileSync(cachefile, JSON.stringify(newcache));
+			fs.writeFileSync(cachefile, JSON.stringify(filecache));
 			return chain.destroy();
 		}
 	};

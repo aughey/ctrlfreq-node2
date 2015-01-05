@@ -1,24 +1,31 @@
 //var si = require('search-index');
 var Q = require('q');
 var _ = require('underscore');
-var request = require('request');
 var fs = require('fs');
 var path = require('path');
 var spawn = require('child_process').spawn;
 
-function create(chain) {
+function create(chain, database) {
 	var filters = ['fullpath'];
 	var batch = [];
+
+	var didstat = null;
+
+	function catdocExists() {
+		if (didstat === null) {
+			didstat = fs.existsSync("/usr/bin/catdoc");
+		}
+		return didstat;
+	}
 
 	function getContent(fullpath) {
 		var deferred = Q.defer();
 
 		var file = fullpath.toLowerCase();
 		var ext = path.extname(file);
-		var extensions = ['.md', '.c', '.h', '.js'];
-		extensions = ['.doc'];
+		var extensions = ['.md', '.c', '.h', '.js', '.doc'];
 		if (_.contains(extensions, ext) || _.contains(["README"], file)) {
-			if (true) {
+			if (catdocExists() && ext === '.doc') {
 				var child = spawn('/usr/bin/catdoc', [fullpath]);
 				var content = "";
 				child.stdout.on('data', function(data) {
@@ -32,7 +39,7 @@ function create(chain) {
 
 					deferred.resolve(content);
 				})
-			} else {
+			} else if (ext !== '.doc') {
 				deferred.resolve(fs.readFileSync(file).toString());
 			}
 		} else {
@@ -43,50 +50,40 @@ function create(chain) {
 	}
 
 	function processBatch() {
-		var deferred = Q.defer();
-
 		if (batch.length == 0) {
-			deferred.resolve(null);
-			return deferred.promise;
+			return Q();
 		}
 
-		var formdata = {
-			document: JSON.stringify(batch)
-		}
-		console.log("Posting " + batch.length + " documents to the indexer")
-			//console.log(batch);
+		var b = batch;
 		batch = [];
 
-		request.post({
-			url: "http://localhost:3030/indexer",
-			formData: formdata
-		}, function(error, response, body) {
-			console.log("indexer posted")
-			console.log(body)
-			deferred.resolve(null);
-		});
-
-		return deferred.promise;
-	}
-
-	function processBatchz() {
-		console.log(batch);
-		return Q.ninvoke(si, 'add', {
-			batchName: 'files',
-			filters: filters
-		}, batch).then(function(err) {
-			console.log("indexed " + err);
-		})
+		return database.save_batch(b);
 	}
 
 	return {
 		opendir: function(dir) {
-			return chain.opendir(dir);
+			var hishandle = null;
+			var oldhandle = dir.handle;
+			if (dir.handle) {
+				hishandle = dir.hishandle;
+				dir.handle.dirs.push(dir.path);
+			}
+			dir.handle = hishandle;
+			return chain.opendir(dir).then(function(hishandle) {
+				dir.handle = oldhandle;
+				return {
+					path: dir.path,
+					dirs: [],
+					files: [],
+					hishandle: hishandle
+				}
+			})
 		},
 		storefile: function(info) {
+			info.handle.files.push(info.file);
 			return chain.storefile(info).then(function(res) {
 				return getContent(info.fullpath).then(function(content) {
-					var document = _.pick(info, ['fullpath']);
+					var document = _.pick(info, ['fullpath', 'stat']);
 					document.key = res;
 
 					if (content) {
@@ -103,26 +100,20 @@ function create(chain) {
 				});
 			});
 		},
+		storedirectory: function(info) {
+			return chain.storedirectory(info);
+		},
+
 		dirdone: function(handle) {
-			return chain.dirdone(handle);
+			return chain.dirdone(handle.hishandle);
 		},
 		close: function(handle) {
-			return chain.close(handle);
+			return chain.close(handle.hishandle);
 		},
 		destroy: function() {
-			var deferred = Q.defer();
-
-			chain.destroy().then(processBatch).then(function() {
-				/*				
-				si.tellMeAboutMySearchIndex(function(msg) {
-					console.log("Search Index: ");
-					console.log(msg);
-					deferred.resolve(null);
-				})
-*/
-				deferred.resolve(null);
-			}).done();
-			return deferred.promise;
+			return chain.destroy().then(processBatch).then(function() {
+				return database.destroy();
+			});
 		}
 	}
 }

@@ -16,8 +16,20 @@ var chunkwrite = 0;
 function init() {
 	var dirlimit = limit(10, "dirlimit");
 
-	function processdir(dirname, handler) {
-		return handler.opendir(dirname).then(function(handle) {
+	function processdir(dirname, handler, handle) {
+		dirname = dirname.replace(/\/+$/,'');
+		var dirobj = {
+			path: dirname,
+			handle: handle
+		};
+		return handler.opendir(dirobj).then(function(handle) {
+
+			var directory_data = {
+				path: dirname,
+				files: [],
+				dirs: [],
+			};
+
 			return Q.nfcall(fs.readdir, dirname).then(function(dirfiles) {
 				var pendingstats = dirfiles.length;
 				var stats = _.map(dirfiles, function(file) {
@@ -32,7 +44,7 @@ function init() {
 							return;
 						}
 						var storestat = _.pick(stat, 'mode', 'uid', 'gid', 'size', 'mtime');
-						storestat.mtime = storestat.mtime.toISOString();
+						storestat.mtime = storestat.mtime / 1000;
 						var info = {
 							fullpath: fullpath,
 							file: file,
@@ -40,9 +52,21 @@ function init() {
 							handle: handle
 						};
 						if (stat.isFile()) {
-							return handler.storefile(info);
+							return handler.storefile(info).then(function(res) {
+								if(res) {
+									res.n = file;
+									directory_data.files.push(res);
+								}
+								return res;
+							});
 						} else if (stat.isDirectory()) {
-							return processdir(fullpath,handler);
+							return processdir(fullpath,handler,handle).then(function(res) {
+								if(res) {
+									res.n = file;
+									directory_data.dirs.push(res);
+								}
+								return res;
+							})
 						} else {
 							console.log("Unknown file: " + fullpath);
 						}
@@ -50,6 +74,9 @@ function init() {
 
 					return Q.nfcall(fs.stat, fullpath).then(handleStat).catch(function(error) {
 						console.log("Stat error: " + error);
+						console.log(typeof error);
+						console.log(error);
+						throw error;
 						handleStat(null);
 					});
 				});
@@ -59,7 +86,14 @@ function init() {
 				}
 
 				return Q.all(stats).then(function() {
+					directory_data.files = directory_data.files.sort();
+					directory_data.dirs = directory_data.dirs.sort();
+				}).then(function() {
 					return handler.close(handle);
+				}).then(function() {
+					return handler.storedirectory(directory_data);
+				}).then(function(res) {
+					return res;
 				});
 			});
 		});

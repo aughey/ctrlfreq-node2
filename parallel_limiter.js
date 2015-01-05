@@ -3,16 +3,21 @@ var limit = require('./limit').limit;
 
 function create(chain) {
 	var dirlimit = limit(5, "dirlimit");
-	var filelimit = limit(10,"filelimit");
+	var filelimit = limit(10, "filelimit");
 
 	function subcreate(dir) {
 		return {
-			opendir: function(dirname) {
-				return dirlimit(dirname).then(function(thisdone) {
+			opendir: function(dir) {
+				var oldhandle = dir.handle;
+				if (dir.handle) {
+					dir.handle = dir.handle.hishandle;
+				}
+				return dirlimit(dir).then(function(thisdone) {
 					var myhandle = {
 						whendone: thisdone
 					};
-					return chain.opendir(dirname).then(function(hishandle) {
+					return chain.opendir(dir).then(function(hishandle) {
+						dir.handle = oldhandle;
 						myhandle.hishandle = hishandle;
 						return myhandle;
 					});
@@ -35,8 +40,11 @@ function create(chain) {
 					});
 				});
 			},
+			storedirectory: function(info) {
+				return chain.storedirectory(info);
+			},
 			close: function(handle) {
-				return chain.close(handle);
+				return chain.close(handle.hishandle);
 			},
 			destroy: function() {
 				return chain.destroy();
