@@ -20,6 +20,9 @@ function extend(chain,obj) {
 		},
 		destroy: function() {
 			return chain.destroy();
+		},
+		stats: function(s) {
+			return chain.stats(s);
 		}
 	};
 	_.each(obj,function(v,k) {

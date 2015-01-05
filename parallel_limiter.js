@@ -1,12 +1,13 @@
 var Q = require('q');
 var limit = require('./limit').limit;
+var c = require("./chain");
 
 function create(chain) {
 	var dirlimit = limit(5, "dirlimit");
 	var filelimit = limit(10, "filelimit");
 
 	function subcreate(dir) {
-		return {
+		return c.extend(chain,{
 			opendir: function(dir) {
 				var oldhandle = dir.handle;
 				if (dir.handle) {
@@ -40,16 +41,12 @@ function create(chain) {
 					});
 				});
 			},
-			storedirectory: function(info) {
-				return chain.storedirectory(info);
-			},
+			
 			close: function(handle) {
 				return chain.close(handle.hishandle);
-			},
-			destroy: function() {
-				return chain.destroy();
 			}
-		}
+			
+		});
 	}
 
 	return subcreate(null);

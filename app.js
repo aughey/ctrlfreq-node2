@@ -41,6 +41,9 @@ mongodb_store.create().then(function(store) {
 			return handler.destroy();
 		}).then(function() {
 			console.log("DONE");
+			var stats = {};
+			handler.stats(stats);
+			console.log(stats);
 		})
 	})
 }).done();

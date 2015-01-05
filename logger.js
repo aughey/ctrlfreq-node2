@@ -14,7 +14,6 @@ function create(chain) {
 		storedirectory: function(info) {
 			return chain.storedirectory(info).then(function(res) {
 				console.log("Stored directory: " + info.path)
-				console.log(info);
 				return res;
 			})
 		}
