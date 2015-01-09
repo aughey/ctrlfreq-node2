@@ -11,6 +11,7 @@ function create(chain, database) {
 	var batch = [];
 
 	var didstat = null;
+	var index_count = 0;
 
 	function catdocExists() {
 		if (didstat === null) {
@@ -91,6 +92,7 @@ function create(chain, database) {
 						document.content = content.slice();
 					}
 					batch.push(document);
+					index_count += 1;
 					if (batch.length >= 10) {
 						return processBatch().then(function() {
 							return res;
@@ -100,6 +102,10 @@ function create(chain, database) {
 					}
 				});
 			});
+		},
+		stats: function(s) {
+			s.files_indexed = index_count;
+			return chain.stats(s);
 		},
 		storedirectory: function(info) {
 			return chain.storedirectory(info);

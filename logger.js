@@ -13,7 +13,9 @@ function create(chain) {
 		},
 		storedirectory: function(info) {
 			return chain.storedirectory(info).then(function(res) {
-				console.log("Stored directory: " + info.path)
+				if(!res.cached) {
+					console.log("Stored directory: " + info.data.path)
+				}
 				return res;
 			})
 		}

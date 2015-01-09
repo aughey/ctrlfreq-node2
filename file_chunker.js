@@ -103,7 +103,8 @@ function create(store) {
 			return store.destroy();
 		},
 		stats: function(s) {
-			s.filecount = filecount;
+			s.files_stored = filecount;
+
 			store.stats(s);
 		}
 	});

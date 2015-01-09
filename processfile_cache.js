@@ -43,7 +43,6 @@ function create(chain, cachefile) {
 
 			function actually_store() {
 				return chain.storefile(info).then(function(res) {
-					console.log(res);
 					if (res) {
 						filecache[info.fullpath] = {
 							info: info,
@@ -53,7 +52,7 @@ function create(chain, cachefile) {
 					return res;
 				});
 			}
-			actually_store();
+			return actually_store();
 		},
 		storedirectory: function(info) {
 			return chain.storedirectory(info);
@@ -65,8 +64,8 @@ function create(chain, cachefile) {
 			return chain.close(handle);
 		},
 		stats: function(s) {
-			s.cache_hits = cache_hits;
-			s.cache_failures = cache_failures;
+			s.file_cache_hits = cache_hits;
+			s.file_cache_failures = cache_failures;
 			return chain.stats(s);
 		},
 		destroy: function() {

@@ -12,6 +12,9 @@ function create() {
 		var dircollection = db.collection('dirs');
 
 		var chunks_stored = 0;
+		var bytes_stored = 0;
+		var directories_stored = 0;
+		var directories_cached = 0;
 
 		function isChunkStored(key, c) {
 			if (!c) {
@@ -34,7 +37,7 @@ function create() {
 
 
 		function save_dir(dir) {
-			var data = JSON.stringify(dir);
+			var data = JSON.stringify(dir.data);
 			var digest = hash.hash(data);
 			dir.hash = digest;
 			//console.log("savedir " + JSON.stringify(dir))
@@ -44,9 +47,12 @@ function create() {
 			}
 			return isChunkStored(digest, dircollection).then(function(isstored) {
 				if (isstored) {
+					directories_cached += 1;
+					ret.cached = true;
 					return ret;
 				} else {
 					return Q.ninvoke(dircollection, 'insert', dir).then(function() {
+						directories_stored += 1;
 						return ret;
 					}).fail(function(err) {
 						if (err.code === 11000) {
@@ -99,6 +105,7 @@ function create() {
 						data: buffer
 					};
 					chunks_stored += 1;
+					bytes_stored += buffer.length;
 					return Q.ninvoke(collection, 'insert', data).then(function() {
 						return digest;
 					}).fail(function(err) {
@@ -129,7 +136,7 @@ function create() {
 			})
 		}).then(function() {
 			return Q.ninvoke(dircollection, 'ensureIndex', {
-				path: 1,
+				'data.path': 1,
 			})
 		}).then(function() {
 			return {
@@ -141,6 +148,9 @@ function create() {
 				},
 				stats: function(s) {
 					s.chunks_stored = chunks_stored;
+					s.directories_stored = directories_stored;
+					s.directories_cached = directories_cached;
+					s.bytes_stored = bytes_stored;
 				}
 
 			}

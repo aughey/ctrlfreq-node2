@@ -9,6 +9,7 @@ function create(chain) {
 	extensions = _.map(extensions, function(p) {
 		return "." + p;
 	});
+	exclude_count = 0;
 
 	var badfiles = [
 		".DS_Store",
@@ -22,11 +23,16 @@ function create(chain) {
 			var file = info.file.toLowerCase();
 			var ext = path.extname(file);
 			if (_.contains(extensions, ext) || _.contains(badfiles, file)) {
+				exclude_count += 1;
 				return Q();
 			} else {
 				return chain.storefile(info);
 			}
 		},
+		stats: function(s) {
+			s.exclude_count = exclude_count;
+			chain.stats(s);
+		}
 	});
 }
 

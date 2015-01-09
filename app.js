@@ -42,6 +42,7 @@ mongodb_store.create().then(function(store) {
 		}).then(function() {
 			console.log("DONE");
 			var stats = {};
+			filetraverse.stats(stats);
 			handler.stats(stats);
 			console.log(stats);
 		})

@@ -33,7 +33,6 @@ function create(chain) {
 				return filelimit(f.fullpath).then(function(thisdone) {
 					var oldhandle = f.handle;
 					f.handle = oldhandle.hishandle;
-
 					return chain.storefile(f).then(function(res) {
 						f.handle = oldhandle;
 						thisdone();
