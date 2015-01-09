@@ -11,6 +11,8 @@ function create() {
 		var collection = db.collection('chunks');
 		var dircollection = db.collection('dirs');
 
+		var chunks_stored = 0;
+
 		function isChunkStored(key, c) {
 			if (!c) {
 				c = collection;
@@ -63,6 +65,22 @@ function create() {
 			});
 		}
 
+		function has_chunks(chunks) {
+			if(chunks.length === 0) {
+				return Q(true);
+			}
+			var cursor = collection.find({
+				hash: { $in: chunks }
+			});
+			return Q.ninvoke(cursor, 'count').then(function(count) {
+				//console.log("Key: " + key + " returned " + count);
+				if (count === chunks.length) {
+					return true;
+				} else {
+					return false;
+				}
+			});
+		}
 
 		function save_chunk(buffer, precomputedkey, debug) {
 			var digest = null;
@@ -80,8 +98,8 @@ function create() {
 						hash: digest,
 						data: buffer
 					};
+					chunks_stored += 1;
 					return Q.ninvoke(collection, 'insert', data).then(function() {
-						console.log("Insertted chunk " + digest);
 						return digest;
 					}).fail(function(err) {
 						if (err.code === 11000) {
@@ -117,9 +135,14 @@ function create() {
 			return {
 				save_chunk: save_chunk,
 				save_dir: save_dir,
+				has_chunks: has_chunks,
 				destroy: function() {
 					return Q.ninvoke(db, 'close');
+				},
+				stats: function(s) {
+					s.chunks_stored = chunks_stored;
 				}
+
 			}
 		});
 	});

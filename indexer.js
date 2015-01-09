@@ -3,6 +3,7 @@ var Q = require('q');
 var _ = require('underscore');
 var fs = require('fs');
 var path = require('path');
+var c = require("./chain");
 var spawn = require('child_process').spawn;
 
 function create(chain, database) {
@@ -60,7 +61,7 @@ function create(chain, database) {
 		return database.save_batch(b);
 	}
 
-	return {
+	return c.extend(chain,{
 		opendir: function(dir) {
 			var hishandle = null;
 			var oldhandle = dir.handle;
@@ -115,7 +116,7 @@ function create(chain, database) {
 				return database.destroy();
 			});
 		}
-	}
+	});
 }
 
 module.exports = {

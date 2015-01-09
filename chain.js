@@ -21,8 +21,13 @@ function extend(chain,obj) {
 		destroy: function() {
 			return chain.destroy();
 		},
+		hasKey: function(k) {
+			return chain.hasKey(k);
+		},
 		stats: function(s) {
-			return chain.stats(s);
+			if(chain) {
+				return chain.stats(s);
+			}
 		}
 	};
 	_.each(obj,function(v,k) {

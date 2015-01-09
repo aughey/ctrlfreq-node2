@@ -1,6 +1,7 @@
 var fs = require('fs');
 var _ = require('underscore');
 var Q = require('q');
+var c = require("./chain");
 
 var cachecount = 0;
 
@@ -16,8 +17,10 @@ function create(chain, cachefile) {
 		filecache = {};
 	}
 
+	var cache_hits = 0;
+	var cache_failures = 0;
 
-	var me = {
+	var me = c.extend(chain, {
 		opendir: function(dir) {
 			return chain.opendir(dir);
 		},
@@ -26,18 +29,31 @@ function create(chain, cachefile) {
 			if (cache) {
 				if (_.isEqual(info.stat, cache.info.stat)) {
 					//console.log("Not storing, cached: " + info.fullpath);
-					return Q(cache.r);
+					return chain.hasKey(cache.r.key).then(function(has) {
+						if(has) {
+							cache_hits += 1;
+							return Q(cache.r);
+						} else {
+							cache_failures += 1;
+							return actually_store();
+						}
+					});
 				}
 			}
-			return chain.storefile(info).then(function(res) {
-				if (res) {	
-					filecache[info.fullpath] = {
-						info: info,
-						r: res
-					}			
-				}
-				return res;
-			});
+
+			function actually_store() {
+				return chain.storefile(info).then(function(res) {
+					console.log(res);
+					if (res) {
+						filecache[info.fullpath] = {
+							info: info,
+							r: res
+						}
+					}
+					return res;
+				});
+			}
+			actually_store();
 		},
 		storedirectory: function(info) {
 			return chain.storedirectory(info);
@@ -48,11 +64,16 @@ function create(chain, cachefile) {
 		close: function(handle) {
 			return chain.close(handle);
 		},
+		stats: function(s) {
+			s.cache_hits = cache_hits;
+			s.cache_failures = cache_failures;
+			return chain.stats(s);
+		},
 		destroy: function() {
 			fs.writeFileSync(cachefile, JSON.stringify(filecache));
 			return chain.destroy();
 		}
-	};
+	});
 	return me;
 }
 

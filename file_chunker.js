@@ -2,11 +2,14 @@ var fs = require('fs');
 var limit = require('./limit').limit;
 var Q = require('q');
 var zlib = require('zlib');
+var c = require("./chain");
 
 function create(store) {
 	var readlimit = limit(100, "readlimit");
 
-	var me = {
+	var filecount = 0;
+
+	var me = c.extend(null,{
 		opendir: function() {
 			return Q();
 		},
@@ -15,6 +18,13 @@ function create(store) {
 		},
 		storedirectory: function(info) {
 			return store.save_dir(info);
+		},
+		hasKey: function(key) {
+			if(key.length === 0) {
+				return Q(true);
+			}
+			var chunks = key.split(',');
+			return store.has_chunks(chunks);
 		},
 		storefile: function(info) {
 			// We're returning our own deferred here to own our own promise chain.
@@ -35,6 +45,7 @@ function create(store) {
 					}
 				}
 			}
+			filecount += 1;
 
 			fs.open(info.fullpath, 'r', function(err, fd) {
 				if (err) {
@@ -90,8 +101,12 @@ function create(store) {
 		},
 		destroy: function() {
 			return store.destroy();
+		},
+		stats: function(s) {
+			s.filecount = filecount;
+			store.stats(s);
 		}
-	};
+	});
 	return me;
 }
 
