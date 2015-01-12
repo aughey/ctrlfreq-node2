@@ -25,7 +25,7 @@ function create(chain, database) {
 
 		var file = fullpath.toLowerCase();
 		var ext = path.extname(file);
-		var extensions = ['.md', '.c', '.h', '.js', '.doc'];
+		var extensions = ['.doc'];
 		if (_.contains(extensions, ext) || _.contains(["README"], file)) {
 			if (catdocExists() && ext === '.doc') {
 				var child = spawn('/usr/bin/catdoc', [fullpath]);
