@@ -1,8 +1,9 @@
 var hash = require('./hash');
+var mongopaths = require('./mongo-paths');
 var MongoClient = require('mongodb').MongoClient
 var Q = require('q');
 
-var url = 'mongodb://localhost:27017/ctrlfreq-node2';
+var url = mongopaths.url();
 
 function create() {
 	return Q.ninvoke(MongoClient, 'connect', url).then(function(db) {
@@ -35,6 +36,8 @@ function create() {
 			});
 		}
 
+                function save_file(file) {
+                }
 
 		function save_dir(dir) {
 			var data = JSON.stringify(dir.data);

@@ -1,7 +1,8 @@
 var Q = require('q');
 var MongoClient = require('mongodb').MongoClient
+var mongopaths = require("./mongo-paths");
 
-var url = 'mongodb://localhost:27017/ctrlfreq-node2';
+var url = mongopaths.url();
 
 function create() {
 	return Q.ninvoke(MongoClient, 'connect', url).then(function(db) {
