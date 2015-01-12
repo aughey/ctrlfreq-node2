@@ -39,9 +39,13 @@ function create(store) {
 					if(error) {
 						deferred.resolve(null);
 					} else {
-						deferred.resolve({
-							key: chunks.join(',')
-						})
+						info.key = chunks.join(',');
+						info.keys = chunks;
+						store.save_file(info).then(function() {
+							deferred.resolve({
+								key: chunks.join(',')
+							})
+						}).done();
 					}
 				}
 			}

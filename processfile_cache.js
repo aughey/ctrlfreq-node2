@@ -10,6 +10,7 @@ function create(chain, cachefile) {
 	var cache = null;
 
 	var cache_hits = 0;
+	var cache_misses = 0;
 	var cache_failures = 0;
 
 	var me = c.extend(chain, {
@@ -41,6 +42,7 @@ function create(chain, cachefile) {
 			});
 
 			function actually_store() {
+				cache_misses++;
 				return chain.storefile(info).then(function(res) {
 					if (res) {
 						var cached = {
@@ -68,6 +70,7 @@ function create(chain, cachefile) {
 		},
 		stats: function(s) {
 			s.file_cache_hits = cache_hits;
+			s.file_cache_misses = cache_misses;
 			s.file_cache_failures = cache_failures;
 			return chain.stats(s);
 		},

@@ -36,8 +36,9 @@ function create() {
 			});
 		}
 
-                function save_file(file) {
-                }
+		function save_file(file) {
+			return Q();
+		}
 
 		function save_dir(dir) {
 			var data = JSON.stringify(dir.data);
@@ -75,11 +76,13 @@ function create() {
 		}
 
 		function has_chunks(chunks) {
-			if(chunks.length === 0) {
+			if (chunks.length === 0) {
 				return Q(true);
 			}
 			var cursor = collection.find({
-				hash: { $in: chunks }
+				hash: {
+					$in: chunks
+				}
 			});
 			return Q.ninvoke(cursor, 'count').then(function(count) {
 				//console.log("Key: " + key + " returned " + count);
@@ -145,6 +148,7 @@ function create() {
 			return {
 				save_chunk: save_chunk,
 				save_dir: save_dir,
+				save_file: save_file,
 				has_chunks: has_chunks,
 				destroy: function() {
 					return Q.ninvoke(db, 'close');
