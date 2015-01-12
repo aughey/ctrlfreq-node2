@@ -2,20 +2,12 @@ var fs = require('fs');
 var _ = require('underscore');
 var Q = require('q');
 var c = require("./chain");
+var kv = require('./kv.js')
 
 var cachecount = 0;
 
 function create(chain, cachefile) {
-	if (!cachefile) {
-		cachefile = "cache.json";
-	}
-	var filecache = {};
-	try {
-		filecache = JSON.parse(fs.readFileSync(cachefile));
-		console.log("Loaded filecache");
-	} catch (e) {
-		filecache = {};
-	}
+	var cache = null;
 
 	var cache_hits = 0;
 	var cache_failures = 0;
@@ -25,31 +17,42 @@ function create(chain, cachefile) {
 			return chain.opendir(dir);
 		},
 		storefile: function(info) {
-			var cache = filecache[info.fullpath];
-			if (cache) {
-				if (_.isEqual(info.stat, cache.info.stat)) {
-					//console.log("Not storing, cached: " + info.fullpath);
-					return chain.hasKey(cache.r.key).then(function(has) {
-						if(has) {
-							cache_hits += 1;
-							return Q(cache.r);
-						} else {
-							cache_failures += 1;
-							return actually_store();
-						}
-					});
+			var key = info.fullpath;
+			return cache.has(key).then(function(cached) {
+				if(cached) {
+					cached = JSON.parse(cached);
+					if (_.isEqual(info.stat, cached.info.stat)) {
+						//console.log("Not storing, cached: " + info.fullpath);
+						return chain.hasKey(cached.r.key).then(function(has) {
+							if(has) {
+								cache_hits += 1;
+								return Q(cached.r);
+							} else {
+								cache_failures += 1;
+								return actually_store();
+							}
+						});
+					} else {
+						return actually_store();
+					}
+				} else {
+					return actually_store();
 				}
-			}
+			});
 
 			function actually_store() {
 				return chain.storefile(info).then(function(res) {
 					if (res) {
-						filecache[info.fullpath] = {
+						var cached = {
 							info: info,
 							r: res
 						}
+						return cache.put(key,JSON.stringify(cached)).then(function() {
+							return res;
+						})
+					} else {
+						return null;
 					}
-					return res;
 				});
 			}
 			return actually_store();
@@ -69,11 +72,16 @@ function create(chain, cachefile) {
 			return chain.stats(s);
 		},
 		destroy: function() {
-			fs.writeFileSync(cachefile, JSON.stringify(filecache));
-			return chain.destroy();
+			return chain.destroy().then(function() {
+				return cache.close();
+			});
 		}
 	});
-	return me;
+
+	return kv.create("cache").then(function(c) {
+		cache = c;
+		return me;
+	});
 }
 
 module.exports = {

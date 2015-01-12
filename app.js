@@ -22,29 +22,46 @@ mongodb_store.create().then(function(store) {
 			[indexer,mongo_index],
 			filechunker
 		];
-		chain.reverse();
 		var handler = store;
-		_.each(chain, function(c) {
+
+		function load_next_chain() {
+			if(chain.length === 0) {
+				finish();
+				return;
+			}
+			var c = chain.pop();
 			if(_.isArray(c)) {
 				handler = c[0].create(handler,c[1]);
 			} else {
 				handler = c.create(handler);
 			}
-		})
+			if(Q.isPromise(handler)) {
+				handler.then(function(realhandler) {
+					handler = realhandler;
+					_.defer(load_next_chain);
+				}).done();
+			} else {
+				_.defer(load_next_chain);
+			}
+		}
 
-		var pending = _.map(args, function(dir) {
-			console.log("Backing up: " + dir);
-			return filetraverse.traverse(dir, handler);
-		});
-		return Q.all(pending).then(function() {
-			console.log("Destroying handler")
-			return handler.destroy();
-		}).then(function() {
-			console.log("DONE");
-			var stats = {};
-			filetraverse.stats(stats);
-			handler.stats(stats);
-			console.log(stats);
-		})
+		load_next_chain();
+
+		function finish() {
+			var pending = _.map(args, function(dir) {
+				console.log("Backing up: " + dir);
+				return filetraverse.traverse(dir, handler);
+			});
+			return Q.all(pending).then(function() {
+				console.log("Destroying handler")
+				return handler.destroy();
+			}).then(function() {
+				console.log("DONE");
+				var stats = {};
+				filetraverse.stats(stats);
+				handler.stats(stats);
+				console.log(stats);
+			}).done();
+		}
 	})
 }).done();

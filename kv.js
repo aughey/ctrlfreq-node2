@@ -1,4 +1,4 @@
-var levelup = require('levelup');
+var levelup = require('level');
 var Q = require('q');
 
 function noop() {}
@@ -9,7 +9,7 @@ module.exports = {
 			return {
 				has: function(key) {
 					return this.get(key).then(function(k) {
-						return k !== null;
+						return k;
 					}).catch(function() {
 						return false;
 					});					
